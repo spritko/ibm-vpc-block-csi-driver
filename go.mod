@@ -137,4 +137,6 @@ replace (
 	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.26.1
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.26.1
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.26.1
+
+	github.com/IBM/ibmcloud-volume-vpc => github.com/spritko/ibmcloud-volume-vpc v0.0.0-20231117200406-a8e5594a7539 //v1.1.6-sdp
 )
