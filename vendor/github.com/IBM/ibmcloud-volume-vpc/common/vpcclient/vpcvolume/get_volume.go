@@ -42,7 +42,7 @@ func (vs *VolumeService) GetVolume(volumeID string, ctxLogger *zap.Logger) (*mod
 	var volume models.Volume
 	var apiErr models.Error
 
-	request := vs.client.NewRequest(operation)
+	request := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 	ctxLogger.Info("Equivalent curl command", zap.Reflect("URL", request.URL()), zap.Reflect("Operation", operation))
 
 	req := request.PathParameter(volumeIDParam, volumeID)

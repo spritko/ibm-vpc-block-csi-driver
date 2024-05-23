@@ -42,7 +42,7 @@ func (vs *VolumeAttachService) ListVolumeAttachments(volumeAttachmentTemplate *m
 	var volumeAttachmentList models.VolumeAttachmentList
 	apiErr := vs.receiverError
 
-	operationRequest := vs.client.NewRequest(operation)
+	operationRequest := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 
 	ctxLogger.Info("Equivalent curl command details", zap.Reflect("URL", operationRequest.URL()), zap.Reflect("volumeAttachmentTemplate", volumeAttachmentTemplate), zap.Reflect("Operation", operation))
 	operationRequest = vs.populatePathPrefixParameters(operationRequest, volumeAttachmentTemplate)

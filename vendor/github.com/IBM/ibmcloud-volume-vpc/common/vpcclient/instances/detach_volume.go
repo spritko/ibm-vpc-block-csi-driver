@@ -42,7 +42,7 @@ func (vs *VolumeAttachService) DetachVolume(volumeAttachmentTemplate *models.Vol
 
 	apiErr := vs.receiverError
 
-	operationRequest := vs.client.NewRequest(operation)
+	operationRequest := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 	operationRequest = vs.populatePathPrefixParameters(operationRequest, volumeAttachmentTemplate)
 	operationRequest = operationRequest.PathParameter(attachmentIDParam, volumeAttachmentTemplate.ID)
 

@@ -43,7 +43,7 @@ func (vs *VolumeService) ListVolumes(limit int, start string, filters *models.Li
 	var volumes models.VolumeList
 	var apiErr models.Error
 
-	request := vs.client.NewRequest(operation)
+	request := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 	ctxLogger.Info("Equivalent curl command", zap.Reflect("URL", request.URL()), zap.Reflect("Operation", operation))
 
 	req := request.JSONSuccess(&volumes).JSONError(&apiErr)

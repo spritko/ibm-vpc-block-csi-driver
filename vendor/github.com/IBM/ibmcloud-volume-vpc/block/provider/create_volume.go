@@ -30,7 +30,9 @@ import (
 
 const (
 	customProfile = "custom"
+	sdpProfile    = "sdp"
 	minSize       = 10
+	sdpMinSize    = 1
 )
 
 // CreateVolume Get the volume by using ID
@@ -122,6 +124,8 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 	// Capacity should not be empty
 	if volumeRequest.Capacity == nil {
 		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, nil)
+	} else if volumeRequest.VPCVolume.Profile.Name == sdpProfile && *volumeRequest.Capacity < sdpMinSize {
+		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, *volumeRequest.Capacity)
 	} else if *volumeRequest.Capacity < minSize {
 		return resourceGroup, iops, userError.GetUserError("VolumeCapacityInvalid", nil, *volumeRequest.Capacity)
 	}
@@ -133,7 +137,7 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 	if volumeRequest.VPCVolume.Profile == nil {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileEmpty", nil)
 	}
-	if volumeRequest.VPCVolume.Profile.Name != customProfile && iops > 0 {
+	if (volumeRequest.VPCVolume.Profile.Name != customProfile || volumeRequest.VPCVolume.Profile.Name != sdpProfile) && iops > 0 {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileIopsInvalid", nil)
 	}
 

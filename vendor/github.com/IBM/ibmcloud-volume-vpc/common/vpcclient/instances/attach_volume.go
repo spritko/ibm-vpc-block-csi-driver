@@ -42,7 +42,7 @@ func (vs *VolumeAttachService) AttachVolume(volumeAttachmentTemplate *models.Vol
 	var volumeAttachment models.VolumeAttachment
 	apiErr := vs.receiverError
 
-	operationRequest := vs.client.NewRequest(operation)
+	operationRequest := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 
 	ctxLogger.Info("Equivalent curl command and payload details", zap.Reflect("URL", operationRequest.URL()), zap.Reflect("Payload", volumeAttachmentTemplate), zap.Reflect("Operation", operation), zap.Reflect("PathParameters", volumeAttachmentTemplate.InstanceID))
 	_, err := vs.populatePathPrefixParameters(operationRequest, volumeAttachmentTemplate).JSONBody(volumeAttachmentTemplate).JSONSuccess(&volumeAttachment).JSONError(apiErr).Invoke()

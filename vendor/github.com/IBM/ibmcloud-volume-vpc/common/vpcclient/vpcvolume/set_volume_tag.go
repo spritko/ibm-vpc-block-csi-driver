@@ -41,7 +41,7 @@ func (vs *VolumeService) SetVolumeTag(volumeID string, tagName string, ctxLogger
 
 	var apiErr models.Error
 
-	request := vs.client.NewRequest(operation)
+	request := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 	ctxLogger.Info("Equivalent curl command", zap.Reflect("URL", request.URL()), zap.Reflect("Operation", operation))
 
 	req := request.PathParameter(volumeIDParam, volumeID).PathParameter(volumeTagParam, tagName).JSONError(&apiErr)

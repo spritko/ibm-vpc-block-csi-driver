@@ -42,7 +42,7 @@ func (vs *VolumeService) ExpandVolume(volumeID string, volumeTemplate *models.Vo
 	var volume models.Volume
 	var apiErr models.Error
 
-	request := vs.client.NewRequest(operation)
+	request := vs.client.WithQueryValue("maturity", "beta").NewRequest(operation)
 	req := request.PathParameter(volumeIDParam, volumeID)
 	ctxLogger.Info("Equivalent curl command and payload details", zap.Reflect("URL", req.URL()), zap.Reflect("Payload", volumeTemplate), zap.Reflect("Operation", operation))
 	_, err := req.JSONBody(volumeTemplate).JSONSuccess(&volume).JSONError(&apiErr).Invoke()
