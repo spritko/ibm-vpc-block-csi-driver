@@ -44,4 +44,7 @@ const (
 
 	// VolumeAttached ...
 	VolumeAttached = "attached"
+
+	// MaturityBeta flag
+	MaturityBeta = "beta"
 )
