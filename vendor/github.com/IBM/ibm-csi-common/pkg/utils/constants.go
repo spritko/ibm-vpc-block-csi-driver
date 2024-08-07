@@ -25,11 +25,22 @@ const (
 	MinimumVolumeSizeInBytes int64 = 10 * GiB
 	// MaximumVolumeSizeInBytes the max allowed capacity
 	MaximumVolumeSizeInBytes int64 = 2 * 1024 * GiB //2000GB = 2TB
+	// MinimumVolumeSizeInBytes minimum size of the volume in bytes
+	MinimumSDPVolumeSizeInBytes int64 = 1 * GiB
+	// MaximumVolumeSizeInBytes the max allowed capacity
+	MaximumSDPVolumeSizeInBytes int64 = 32 * 1024 * GiB //2000GB = 32TB
+
 
 	// MinimumVolumeDiskSizeInGb minimum size of the volume in GB
 	MinimumVolumeDiskSizeInGb = 10
 	// MaximumVolumeDiskSizeInGb ...
 	MaximumVolumeDiskSizeInGb = 2048
+	// MinimumVolumeDiskSizeInGb minimum size of the volume in GB
+	MinimumSDPVolumeDiskSizeInGb = 1
+	// MaximumVolumeDiskSizeInGb ...
+	MaximumSDPVolumeDiskSizeInGb = 1024 * 32
+
+
 	// DefaultVolumeDiskSizeinGb default size of the volume in GB
 	DefaultVolumeDiskSizeinGb = 10
 	// MaxRetryAttemptForSessions ...

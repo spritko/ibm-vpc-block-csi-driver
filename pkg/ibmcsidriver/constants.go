@@ -65,6 +65,9 @@ const (
 	// CustomProfile ...
 	CustomProfile = "custom"
 
+	// SdpProfile ...
+	SdpProfile = "sdp"
+
 	// ClassVersion ...
 	ClassVersion = "classVersion"
 

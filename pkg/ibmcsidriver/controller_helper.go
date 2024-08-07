@@ -50,13 +50,21 @@ var customCapacityIopsRanges = []classRange{
 	{1000, 1999, 100, 20000},
 }
 
+// Range as per IBM volume provider Storage
+var sdpCapacityIopsRanges = []classRange{
+	{1, 32000, 100, 64000},
+}
+
 // normalize the requested capacity(in GiB) to what is supported by the driver
-func getRequestedCapacity(capRange *csi.CapacityRange) (int64, error) {
+func getRequestedCapacity(capRange *csi.CapacityRange, profile *provider.Profile) (int64, error) {
 	// Input is in bytes from csi
 	var capBytes int64
 	// Default case where nothing is set
 	if capRange == nil {
 		capBytes = utils.MinimumVolumeSizeInBytes
+		if profile != nil && profile.Name == SdpProfile {
+			capBytes = utils.MinimumSDPVolumeSizeInBytes
+		}
 		// returns in GiB
 		return capBytes, nil
 	}
@@ -69,8 +77,14 @@ func getRequestedCapacity(capRange *csi.CapacityRange) (int64, error) {
 	if lSet && rSet && lBytes < rBytes {
 		return 0, fmt.Errorf("limit bytes %v is less than required bytes %v", lBytes, rBytes)
 	}
-	if lSet && lBytes < utils.MinimumVolumeSizeInBytes {
-		return 0, fmt.Errorf("limit bytes %v is less than minimum volume size: %v", lBytes, utils.MinimumVolumeSizeInBytes)
+	if profile != nil && profile.Name == SdpProfile {
+		if lSet && lBytes < utils.MinimumSDPVolumeSizeInBytes {
+			return 0, fmt.Errorf("limit bytes %v is less than minimum volume size: %v", lBytes, utils.MinimumSDPVolumeSizeInBytes)
+		}
+	} else {
+		if lSet && lBytes < utils.MinimumVolumeSizeInBytes {
+			return 0, fmt.Errorf("limit bytes %v is less than minimum volume size: %v", lBytes, utils.MinimumVolumeSizeInBytes)
+		}
 	}
 
 	// If Required set just set capacity to that which is Required
@@ -83,8 +97,14 @@ func getRequestedCapacity(capRange *csi.CapacityRange) (int64, error) {
 
 	// Limit is more than Required, but larger than Minimum. So we just set capcity to Minimum
 	// Too small, default
-	if capBytes < utils.MinimumVolumeSizeInBytes {
-		capBytes = utils.MinimumVolumeSizeInBytes
+	if profile != nil && profile.Name == SdpProfile {
+		if capBytes < utils.MinimumSDPVolumeSizeInBytes {
+			capBytes = utils.MinimumSDPVolumeSizeInBytes
+		}
+	} else {
+		if capBytes < utils.MinimumVolumeSizeInBytes {
+			capBytes = utils.MinimumVolumeSizeInBytes
+		}
 	}
 
 	return capBytes, nil
@@ -197,7 +217,7 @@ func getVolumeParameters(logger *zap.Logger, req *csi.CreateVolumeRequest, confi
 
 	// Get the requested capacity from the request
 	capacityRange := req.GetCapacityRange()
-	capBytes, err := getRequestedCapacity(capacityRange)
+	capBytes, err := getRequestedCapacity(capacityRange, volume.VPCVolume.Profile)
 	if err != nil {
 		err = fmt.Errorf("invalid PVC capacity size: '%v'", err)
 		logger.Error("getVolumeParameters", zap.NamedError("invalid parameter", err))
@@ -246,7 +266,7 @@ func getVolumeParameters(logger *zap.Logger, req *csi.CreateVolumeRequest, confi
 		return volume, err
 	}
 
-	if volume.VPCVolume.Profile != nil && volume.VPCVolume.Profile.Name != CustomProfile {
+	if volume.VPCVolume.Profile != nil && (volume.VPCVolume.Profile.Name != CustomProfile && volume.VPCVolume.Profile.Name != SdpProfile) {
 		// Specify IOPS only for custom class
 		volume.Iops = nil
 	}
@@ -284,6 +304,28 @@ func isValidCapacityIOPS4CustomClass(size int, iops int) (bool, error) {
 	if iops < customCapacityIopsRanges[ind].minIops || iops > customCapacityIopsRanges[ind].maxIops {
 		return false, fmt.Errorf("invalid IOPS: <%v> for capacity: <%vGiB>. Should be in range [%d - %d]",
 			iops, size, customCapacityIopsRanges[ind].minIops, customCapacityIopsRanges[ind].maxIops)
+	}
+	return true, nil
+}
+
+// Validate size and iops for sdp class
+func isValidCapacityIOPS4SdpClass(size int, iops int) (bool, error) {
+	var ind = -1
+	for i, entry := range sdpCapacityIopsRanges {
+		if size >= entry.minSize && size <= entry.maxSize {
+			ind = i
+			break
+		}
+	}
+
+	if ind < 0 {
+		return false, fmt.Errorf("invalid PVC size for custom class: <%v>. Should be in range [%d - %d]GiB",
+			size, utils.MinimumSDPVolumeDiskSizeInGb, utils.MaximumSDPVolumeDiskSizeInGb)
+	}
+
+	if iops < sdpCapacityIopsRanges[ind].minIops || iops > sdpCapacityIopsRanges[ind].maxIops {
+		return false, fmt.Errorf("invalid IOPS: <%v> for capacity: <%vGiB>. Should be in range [%d - %d]",
+			iops, size, sdpCapacityIopsRanges[ind].minIops, sdpCapacityIopsRanges[ind].maxIops)
 	}
 	return true, nil
 }
@@ -351,6 +393,21 @@ func overrideParams(logger *zap.Logger, req *csi.CreateVolumeRequest, config *co
 					err = fmt.Errorf("%v:<%v> invalid value", key, value)
 				} else {
 					if check, err = isValidCapacityIOPS4CustomClass(*(volume.Capacity), iops); check {
+						iopsStr := value
+						logger.Info("override", zap.Any(IOPS, value))
+						volume.Iops = &iopsStr
+					}
+				}
+			}
+			// Override IOPS only for custom class
+			if volume.Capacity != nil && volume.VPCVolume.Profile != nil && volume.VPCVolume.Profile.Name == "sdp" {
+				var iops int
+				var check bool
+				iops, err = strconv.Atoi(value)
+				if err != nil {
+					err = fmt.Errorf("%v:<%v> invalid value", key, value)
+				} else {
+					if check, err = isValidCapacityIOPS4SdpClass(*(volume.Capacity), iops); check {
 						iopsStr := value
 						logger.Info("override", zap.Any(IOPS, value))
 						volume.Iops = &iopsStr

@@ -14,8 +14,5 @@ parameters:
   zone: ""                          # By default, the storage vpc driver will select a zone. The user can override this default
   tags: ""                          # A list of tags "a, b, c" that will be created when the volume is created. This can be overidden by user
   classVersion: "1"
-  csi.storage.k8s.io/fstype: "ext4" # ext4 is the default filesytem used.
-  csi.storage.k8s.io/provisioner-secret-name: ${pvc.name}
-  csi.storage.k8s.io/provisioner-secret-namespace: ${pvc.namespace}
 reclaimPolicy: "Retain"
 allowVolumeExpansion: true

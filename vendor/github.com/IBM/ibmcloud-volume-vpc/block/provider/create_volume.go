@@ -140,7 +140,7 @@ func validateVolumeRequest(volumeRequest *provider.Volume, clusterVolumeLabel st
 	if (volumeRequest.VPCVolume.Profile.Name != customProfile && volumeRequest.VPCVolume.Profile.Name != sdpProfile) && iops > 0 {
 		return resourceGroup, iops, userError.GetUserError("VolumeProfileIopsInvalid", nil)
 	}
-	if volumeRequest.VPCVolume.Profile.Name == sdpProfile && volumeRequest.Iops != nil {
+	if volumeRequest.VPCVolume.Profile.Name == sdpProfile && volumeRequest.Iops == nil {
 		iops = 3000 // default to 3K IOPS for sdp
 	}
 
