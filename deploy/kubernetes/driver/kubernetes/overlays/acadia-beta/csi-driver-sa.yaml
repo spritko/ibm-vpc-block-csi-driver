@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ibm-vpc-block-controller-sa
+  namespace: kube-system
+imagePullSecrets:
+  - name: icr-io-secret
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ibm-vpc-block-node-sa
+  namespace: kube-system
+imagePullSecrets:
+  - name: icr-io-secret

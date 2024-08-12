@@ -5,4 +5,4 @@ resources:
 patches:
 - path: controller-server-images.yaml
 - path: node-server-images.yaml
-
+- path: csi-driver-sa.yaml
