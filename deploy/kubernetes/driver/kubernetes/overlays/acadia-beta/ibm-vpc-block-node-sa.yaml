@@ -1,0 +1,10 @@
+apiVersion: v1
+imagePullSecrets:
+- name: bluemix-default-secret
+- name: bluemix-default-secret-regional
+- name: bluemix-default-secret-international
+- name: all-icr-io
+kind: ServiceAccount
+metadata:
+  name: ibm-vpc-block-node-sa
+  namespace: kube-system
